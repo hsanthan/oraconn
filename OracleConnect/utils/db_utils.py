@@ -270,3 +270,4 @@ class db_util:
         data_df_1 = itcfs.read_pandas_and_concat(readClient, flightInfo)
         # print(data_df_1.head(10))
     read_from_platform_conn('select * from emp')'''
+    
