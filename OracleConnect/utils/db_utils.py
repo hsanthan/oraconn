@@ -7,6 +7,7 @@ from cryptography.fernet import Fernet
 import ipywidgets as widgets
 import itc_utils.flight_service as itcfs
 from IPython.display import display, clear_output
+from IPython.core.magics.display import cell_magic
 
 
 class db_util:
@@ -21,10 +22,10 @@ class db_util:
 
         display(self.btn_db_conn, output)
 
-        @output.capture(clear_output=True)
+        @output.capture(clear_output=False)
         def on_button_clicked(b):
             with output:
-                # print("Button clicked.")
+                clear_output()
                 self.connect_to_db()
 
         self.btn_db_conn.on_click(on_button_clicked)
@@ -44,6 +45,7 @@ class db_util:
         try:
             rows = self.cursor.execute(sqlquery)
             self.df = pd.DataFrame(rows, columns=[col[0] for col in self.cursor.description])
+            cell_magic(clear)
             self.get_columns_to_mask(self.df.columns)
         except Exception as e:
             print(e)
@@ -51,6 +53,8 @@ class db_util:
             # return df
 
     def get_columns_to_mask(self, columns):
+        cell_magic(clear)
+        clear_output(wait=False)
         print('Select the columns you want to mask: ')
         data = columns
         # data.insert(0,'None')
@@ -65,9 +69,11 @@ class db_util:
 
         display(self.btn_col_mask, output)
 
-        @output.capture(clear_output=True)
+        @output.capture(clear_output=False)
         def on_button_clicked(b):
             with output:
+                cell_magic(clear)
+                clear_output(wait=False)
                 self.selected_cols()
 
         self.btn_col_mask.on_click(on_button_clicked)
@@ -81,21 +87,23 @@ class db_util:
 
         display(self.btn_row_mask, output)
 
-        @output.capture(clear_output=True)
+        @output.capture(clear_output=False)
         def on_button_clicked(b):
             with output:
+                clear_output(wait=False)
                 self.get_row_filter()
 
         self.btn_row_mask.on_click(on_button_clicked)
 
-        self.btn_show_data = widgets.Button(description="No Row masking...Show data")
+        self.btn_show_data = widgets.Button(description="No row masking...Show data as is")
         output = widgets.Output()
 
         display(self.btn_show_data, output)
 
-        @output.capture(clear_output=True)
+        @output.capture(clear_output=False)
         def on_button_clicked(b):
             with output:
+                clear_output()
                 self.show_df_data(self.df)
 
         self.btn_show_data.on_click(on_button_clicked)
@@ -104,6 +112,7 @@ class db_util:
         print(df1)
 
     def get_row_filter(self):
+        clear_output()
         col_dict = self.df.columns
         self.filter_col = widgets.Dropdown(
             options=col_dict,
@@ -137,10 +146,10 @@ class db_util:
 
         display(self.btn_row_mask_apply, output)
 
-        @output.capture(clear_output=True)
+        @output.capture(clear_output=False)
         def on_button_clicked(b):
             with output:
-                # print("Button clicked.")
+                clear_output()
                 self.apply_mask()
 
         self.btn_row_mask_apply.on_click(on_button_clicked)
@@ -156,8 +165,8 @@ class db_util:
         # print(df_masked.head(10))
 
     def apply_mask(self):
-        print(self.df.head(10))
-        print(self.cols_to_mask)
+        #print(self.df.head(10))
+        #print(self.cols_to_mask)
         df_masked = self.df
         df_masked[self.cols_to_mask] = 'xxxx'
         self.show_df_data(df_masked)
@@ -176,6 +185,7 @@ class db_util:
         #self.connect_to_db()'''
 
     def run_sql_query(self):
+        cell_magic(%clear)
         self.sql = widgets.Textarea(
             # value='',
             placeholder='Type your query here',
@@ -191,7 +201,8 @@ class db_util:
 
         def on_button_clicked(b):
             with output:
-                # print("Button clicked.")
+                cell_magic(%clear)
+                clear_output(wait=False)
                 self.read_data_from_db(self.sql.value)
 
         self.btn_run_query.on_click(on_button_clicked)
@@ -203,7 +214,7 @@ class db_util:
         self.rows_to_mask = input('Provide the condition for row masking: ')
         self.apply_mask()
 
-    def read_from_platform_conn(sql):
+    '''def read_from_platform_conn(sql):
         readClient = itcfs.get_flight_client()
 
         ora_amalthea_data_request = {
@@ -217,4 +228,4 @@ class db_util:
 
         # print(data_df_1.head(10))
 
-    read_from_platform_conn('select * from emp')
+    read_from_platform_conn('select * from emp')'''
