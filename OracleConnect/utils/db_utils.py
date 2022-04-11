@@ -9,6 +9,7 @@ import itc_utils.flight_service as itcfs
 from IPython.display import display, clear_output
 from IPython.core.magics.display import cell_magic
 from project_lib import Project
+from ibm_watson_studio_lib import access_project_or_space
 
 
 class db_util:
@@ -249,6 +250,17 @@ class db_util:
         self.apply_mask()
 
     def save_data_to_project(self, df1):
+        try:
+            wslib = access_project_or_space()
+            filename = 'masked_data.csv'
+            wslib.save_data(filename, data=df1.to_csv(index=False).encode(), overwrite=True)
+            print('Data saved to the project')
+            # on save show js alert to take the user to the project assets page
+            # call df.to based on the filename extension
+        except Exception as e:
+            print(e)
+
+    def save_data_to_project_dep(self, df1):
         try:
             project = Project.access()
             filename = 'masked_data.csv'  # input('Save data as: ')
