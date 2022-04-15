@@ -1,0 +1,70 @@
+[root@api.ganymade.cp.fyre.ibm.com ~]# oc rsh c-db2u-dv-db2u-0  
+Defaulted container "db2u" out of: db2u, instdb (init), init-labels (init), init-kernel (init)
+sh-4.4$ su - db2inst1
+Last login: Thu Apr 14 20:13:13 UTC 2022
+[db2inst1@c-db2u-dv-db2u-0 - Db2U ~]$ pwd
+/mnt/blumeta0/home/db2inst1/
+[db2inst1@c-db2u-dv-db2u-0 - Db2U ~]$ db2audit describe
+DB2 AUDIT SETTINGS:
+
+Audit active: "FALSE "
+Log audit events: "FAILURE"
+Log checking events: "FAILURE"
+Log object maintenance events: "FAILURE"
+Log security maintenance events: "FAILURE"
+Log system administrator events: "FAILURE"
+Log validate events: "FAILURE"
+Log context events: "NONE"
+Return SQLCA on audit error: "FALSE "
+Audit Data Path: ""
+Audit Archive Path: ""
+
+AUD0000I  Operation succeeded.
+
+[db2inst1@c-db2u-dv-db2u-0 - Db2U ~]$ db2 "connect to bigsql"
+
+   Database Connection Information
+
+ Database server        = DB2/LINUXX8664 11.5.7.0
+ SQL authorization ID   = DB2INST1
+ Local database alias   = BIGSQL
+
+[db2inst1@c-db2u-dv-db2u-0 - Db2U ~]$ db2 create audit policy logall categories all status both error type audit
+DB20000I  The SQL command completed successfully.
+[db2inst1@c-db2u-dv-db2u-0 - Db2U ~]$ db2 audit database using policy logall
+DB20000I  The SQL command completed successfully.
+[db2inst1@c-db2u-dv-db2u-0 - Db2U ~]$ db2audit archive database bigsql
+
+Member   DB Partition   AUD      Archived or Interim Log File                     
+Number   Number         Message                                                   
+-------- -------------- -------- -------------------------------------------------
+       0              0 AUD0000I db2audit.db.BIGSQL.log.0.20220414210348            
+       1              1 AUD0000I db2audit.db.BIGSQL.log.1.20220414210348 
+
+[db2inst1@c-db2u-dv-db2u-0 - Db2U auditdata]$ db2audit extract file db2audit_db.log from path /mnt/blumeta0/home/db2inst1/sqllib/security/auditdata/ files db2audit.db.BIGSQL.log.0.20220414210348 
+
+AUD0000I  Operation succeeded.
+
+/mnt/blumeta0/home/db2inst1/sqllib/security/auditdata/db2audit_db_2.log
+
+Ex: 
+timestamp=2022-04-14-21.20.16.180353;
+  category=CONTEXT;
+  audit event=OPEN_CURSOR;
+  event correlator=4;
+  database=BIGSQL;
+  userid=wmis;
+  authid=WMIS;
+  origin node=0;
+  coordinator node=0;
+  application id=10.254.16.67.35886.220415165939;
+  application name=SQLEditor;
+  package schema=NULLID;
+  package name=SYSSH100;
+  package section=1;
+  text=select * from "GENERIC"."TEST_JOB";
+  local transaction id=0xfca3ba0000000000;
+  global transaction id=0x0000000800001d340000000000000000fca3ba00;
+  client workstation name=10.254.16.67;
+  instance name=db2inst1;
+  hostname=c-db2u-dv-db2u-0.c-db2u-dv-db2u-internal.wkc.svc.cluster.local;
